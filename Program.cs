@@ -9,7 +9,7 @@ class dotAPI {
 
     static void Main(string[] args) {
         // Parse Input
-        Dictionary <string, string> arguments = parseCliArgs(args);
+        Dictionary <string, string> arguments = ConvertCliArgs(args);
 
         // Check Input
         if (!arguments.ContainsKey("endpoint") || !new [] {"hourly", "daily", "monthly"}.Contains(arguments["endpoint"])){
@@ -21,7 +21,7 @@ class dotAPI {
         string filePathData = $"data/{arguments["endpoint"]}_data.json";
 
         // Get Metadata
-        var metadata = jsonConvert(GetData(apiBaseURL, GetEndpoint("metadata")).Result);
+        var metadata = ConvertJSON(GetData(apiBaseURL, FormatEndpoint("metadata")).Result);
         
         // Extract IDs       
         var data = new Dictionary<object, object>(); 
@@ -29,17 +29,17 @@ class dotAPI {
 
         // Get Data
         foreach(KeyValuePair<object, object> item in data) {
-            data[item.Key] = jsonConvert(GetData(apiBaseURL, GetEndpoint(arguments["endpoint"], item.Value.ToString()!)).Result);
+            data[item.Key] = ConvertJSON(GetData(apiBaseURL, FormatEndpoint(arguments["endpoint"], item.Value.ToString()!)).Result);
         }
 
         // Write Results
-        File.WriteAllText(filePathMeta, stringConvert(metadata));
-        File.WriteAllText(filePathData, stringConvert(data));
+        File.WriteAllText(filePathMeta, ConvertString(metadata));
+        File.WriteAllText(filePathData, ConvertString(data));
 
         Console.WriteLine("Execution Complete...");
     }
 
-    public static Dictionary<string, string> parseCliArgs(string[] args) {
+    public static Dictionary<string, string> ConvertCliArgs(string[] args) {
         var arguments = new Dictionary<string, string>();
 
         foreach (string argument in args){
@@ -50,11 +50,11 @@ class dotAPI {
         return arguments;
     }
 
-    public static List<Dictionary<string, object>> jsonConvert(string str){
+    public static List<Dictionary<string, object>> ConvertJSON(string str){
         return JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(str)!;
     }
 
-    public static string stringConvert<T>(T obj){
+    public static string ConvertString<T>(T obj){
         return JsonConvert.SerializeObject(obj);
     }
 
@@ -73,7 +73,7 @@ class dotAPI {
         return result;  
     }
 
-    public static string GetEndpoint(string endpoint, string id=""){
+    public static string FormatEndpoint(string endpoint, string id=""){
         string apiEndpoint = string.Empty;
 
         // Get metadata
@@ -99,5 +99,3 @@ class dotAPI {
         return apiEndpoint;
     }
 }
-
-
